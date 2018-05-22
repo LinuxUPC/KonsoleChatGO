@@ -6,10 +6,21 @@ import (
 	"os"
 )
 
-func main() {
+var users = make(map[string]net.Conn)
 
-	service := ":1200"
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", service)
+func clientHandler(conn net.Conn){
+	defer conn.Close()
+	var buffer [512] byte
+	n, err := conn.Read(buffer[0:])
+	checkError(err)
+	fmt.Println("User", string(buffer[:n]), "logged in.")
+	conn.Write([]byte("y")) // don't care about return value
+}
+
+func main() {
+	port := ":1200"
+
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", port)
 	checkError(err)
 
 	listener, err := net.ListenTCP("tcp", tcpAddr)
@@ -20,11 +31,8 @@ func main() {
 		if err != nil {
 			continue
 		}
-
-		conn.Write([]byte("y")) // don't care about return value
-		conn.Close()                // we're finished with this client
+		go clientHandler(conn)
 	}
-	end: goto end
 }
 
 func checkError(err error) {

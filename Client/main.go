@@ -34,7 +34,7 @@ func main(){
 login:
 	fmt.Println("type your username")
 	var uname string
-	fmt.Scanln(uname)
+	fmt.Scan(&uname)
 	n, err := connection.Write([]byte(uname))
 	checkError(err)
 	checkAllBytesSent(int(n), uname)
