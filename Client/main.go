@@ -24,7 +24,7 @@ func checkError(err error){
 func main(){
 	fmt.Println("Welcome to konsoleChat")
 	fmt.Println("Connecting to server ...")
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", "localhost:1201")
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", "localhost:1200")
 	checkError(err)
 	fmt.Println("... ...")
 	connection, err := net.DialTCP("tcp4", nil, tcpAddr)
@@ -44,4 +44,6 @@ login:
 		fmt.Fprintf(os.Stderr, "Username already in use")
 		goto login
 	}
+	fmt.Println("success!")
+	end: goto end
 }
