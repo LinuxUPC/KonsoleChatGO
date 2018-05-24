@@ -5,10 +5,18 @@ import (
 	"net"
 	"os"
 	"bytes"
+	"os/exec"
+	"bufio"
 )
 
-func checkAllBytesSent(n int, uname string){
-	if n != len(uname){
+func cls(){
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+}
+
+func checkAllBytesSent(n int, intended_send string){
+	if n != len(intended_send){
 		fmt.Fprintf(os.Stderr, "Fatal error: could not send all data to server")
 		os.Exit(1)
 	}
@@ -21,7 +29,43 @@ func checkError(err error){
 	}
 }
 
+/*func parseCommand(cmd string) [] string{
+	word :=""
+	reading := false
+	var words []string
+	for _, char := range cmd{
+		if char == ' '{
+			if word != ""{
+				words = append(words, word)
+				word = ""
+			}
+		}else if char == '"' || reading{
+			if()
+			reading = true
+			word += string(char)
+
+		}
+
+		if char != ' ' && char != '"'{
+			word += string(char)
+		}
+	}
+}*/
+
+//handle command  and do network thing
+
+func commandHandler(conn net.Conn, uname string ){
+	defer conn.Close()
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan(){
+		cmd := scanner.Text()
+		//command := parseCommand(cmd)
+	}
+
+}
+
 func main(){
+	fmt.Println(int('\n'))
 	fmt.Println("Welcome to konsoleChat")
 	fmt.Println("Connecting to server ...")
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", "localhost:1200")
@@ -34,7 +78,7 @@ func main(){
 login:
 	fmt.Println("type your username")
 	var uname string
-	fmt.Scanln(uname)
+	fmt.Scan(&uname)
 	n, err := connection.Write([]byte(uname))
 	checkError(err)
 	checkAllBytesSent(int(n), uname)
@@ -45,5 +89,11 @@ login:
 		goto login
 	}
 	fmt.Println("success!")
+	commandHandler(connection, uname)
+
+
+
+
+
 	end: goto end
 }
