@@ -1,6 +1,7 @@
 #!/bin/sh
 #export projectPATH="$GOPATH/src/KonsoleChatGO"
 
+
 go build -o "$projectPATH/tmp/server" ./Server
 go build -o "$projectPATH/tmp/client" ./Client
 
