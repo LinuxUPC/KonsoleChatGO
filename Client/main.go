@@ -6,8 +6,8 @@ import (
 	"os"
 	"bytes"
 	"bufio"
-	"KonsoleChatGO/ec"
-	"KonsoleChatGO/utils"
+	"../ec"
+	"../utils"
 )
 
 //handle command  and do network thing
