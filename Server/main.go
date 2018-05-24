@@ -8,30 +8,7 @@ import (
 
 var users = make(map[string]net.Conn)
 
-func split(buffer [512] byte, size int) string[]
-	var splited []string
-	for pos := 0 {
-		actual := ""
-		dquoted:= buffer[pos] == '"'
-		if dquoted {
-			pos++
-		}
-		for i, char := range buffer[pos:]{
-			pos++
-			if dquoted && char == '"'{
-				break
-			}
-			else{
-				if char == '"' {
-					quoted = true
-				}
-				else {
-					
-				}
-			}
-		}
-	}
-}
+
 
 func clientHandler(conn net.Conn){
 	defer conn.Close()
@@ -46,7 +23,7 @@ func clientHandler(conn net.Conn){
 	for {
 		n, err := conn.Read(buffer[0:])
 		checkError(err)
-		recived = split(buffer[:n], n)
+		/**recived = **/split(buffer, n)
 	}
 }
 
