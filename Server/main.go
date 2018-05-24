@@ -17,8 +17,18 @@ func split(buffer [512] byte, size int) string[]
 			pos++
 		}
 		for i, char := range buffer[pos:]{
-			if 
 			pos++
+			if dquoted && char == '"'{
+				break
+			}
+			else{
+				if char == '"' {
+					quoted = true
+				}
+				else {
+					
+				}
+			}
 		}
 	}
 }
