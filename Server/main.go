@@ -21,9 +21,9 @@ func clientHandler(conn net.Conn){
 		users[username] = conn
 	}
 	for {
-		n, err := conn.Read(buffer[0:])
+		_, err := conn.Read(buffer[0:])
 		checkError(err)
-		/**recived = **/split(buffer, n)
+		/**recived = split(buffer, n)**/
 	}
 }
 
