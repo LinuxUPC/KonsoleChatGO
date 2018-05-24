@@ -19,9 +19,13 @@ func commandHandler(conn net.Conn, uname string ){
 	for scanner.Scan(){
 
 		cmd := scanner.Text()
-		fmt.Println(cmd)
+		comand, _ := utils.ParseCommand(cmd)
+		fmt.Println("The contents of the command are:")
+		for _, strin := range comand{
+			fmt.Println(strin)
+		}
 		fmt.Printf(">")
-		//command := parseCommand(cmd)
+
 	}
 
 }
