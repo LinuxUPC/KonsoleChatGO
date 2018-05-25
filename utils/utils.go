@@ -43,5 +43,8 @@ func ParseCommand(cmd string) ([] string,error){
 		}
 
 	}
+	if word != ""{
+		words = append(words,word)
+	}
 	return words, nil
 }

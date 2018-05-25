@@ -8,21 +8,49 @@ import (
 	"bufio"
 	"KonsoleChatGO/ec"
 	"KonsoleChatGO/utils"
+	"KonsoleChatGO/Client/commands"
+
 )
+
+
+
+func read(reader *bufio.Reader, mesages chan <-string, responses chan <- string){
+	for {
+		msg, err := reader.ReadString('|')
+		ec.CheckError(err)
+		mesages <- msg
+		if msg[:3] == "msg"{
+			mesages <- msg
+		}else{
+			responses <- msg
+		}
+
+	}
+}
 
 //handle command  and do network thing
 
 func commandHandler(conn net.Conn, uname string ){
 	defer conn.Close()
+	netReader := bufio.NewReader(conn)
+	netWriter := bufio.NewWriter(conn)
+	mesages := make(chan string, 1000)
+	response := make(chan string, 1)
+	go read(netReader,mesages, response)
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Printf(">")
 	for scanner.Scan(){
 
 		cmd := scanner.Text()
 		comand, _ := utils.ParseCommand(cmd)
-		fmt.Println("The contents of the command are:")
-		for _, strin := range comand{
-			fmt.Println(strin)
+		switch comand[0] {
+		case  "help":
+			commands.Help()
+				break
+		case "jr":
+			err := commands.JoinRoom(comand[1], netWriter, response)
+			ec.CheckError(err)
+
 		}
 		fmt.Printf(">")
 
