@@ -29,7 +29,7 @@ func login(conn net.Conn) *Client{
 	packet := "login "+uname
 	n, err := conn.Write([]byte(packet))
 	ec.CheckError(err)
-	ec.CheckAllBytesSent(int(n), uname)
+	ec.CheckAllBytesSent(int(n), packet)
 	var buffer [512] byte
 	n, err = conn.Read(buffer[0:])
 	if bytes.Compare(buffer[0:1], []byte("y")) != 0{
@@ -48,7 +48,9 @@ func login(conn net.Conn) *Client{
 func read(c * Client){
 	for {
 		msg, err := c.reader.ReadString('|')
-		ec.CheckError(err)
+		if err != nil{
+			continue
+		}
 		if msg[:3] == "msg"{
 			c.messages <- msg
 		}else{
@@ -101,8 +103,6 @@ func main(){
 	utils.Cls()
 	fmt.Println("success! welcome to KonsoleChat")
 	fmt.Println("type \"help\" for help")
-
-
 	commandHandler(cl)
 	end: goto end
 }
