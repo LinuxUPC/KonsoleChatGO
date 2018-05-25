@@ -12,17 +12,47 @@ import (
 
 )
 
+type Client struct {
+	reader *bufio.Reader
+	writer *bufio.Writer
+	messages chan string
+	responses chan string
+	uname string
+}
 
+func login(conn net.Conn) *Client{
 
-func read(reader *bufio.Reader, mesages chan <-string, responses chan <- string){
+	fmt.Println("type your username")
+	fmt.Printf(">")
+	var uname string
+	fmt.Scan(&uname)
+	packet := "login "+uname
+	n, err := conn.Write([]byte(packet))
+	ec.CheckError(err)
+	ec.CheckAllBytesSent(int(n), uname)
+	var buffer [512] byte
+	n, err = conn.Read(buffer[0:])
+	if bytes.Compare(buffer[0:1], []byte("y")) != 0{
+		fmt.Fprintf(os.Stderr, "Username already in use")
+		//restart
+	}
+	return &Client{
+		reader:bufio.NewReader(conn),
+		writer:bufio.NewWriter(conn),
+		messages:make(chan string, 999),
+		responses:make(chan string, 1),
+		uname:uname,
+	}
+}
+
+func read(c * Client){
 	for {
-		msg, err := reader.ReadString('|')
+		msg, err := c.reader.ReadString('|')
 		ec.CheckError(err)
-		mesages <- msg
 		if msg[:3] == "msg"{
-			mesages <- msg
+			c.messages <- msg
 		}else{
-			responses <- msg
+			c.responses <- msg
 		}
 
 	}
@@ -30,13 +60,9 @@ func read(reader *bufio.Reader, mesages chan <-string, responses chan <- string)
 
 //handle command  and do network thing
 
-func commandHandler(conn net.Conn, uname string ){
-	defer conn.Close()
-	netReader := bufio.NewReader(conn)
-	netWriter := bufio.NewWriter(conn)
-	mesages := make(chan string, 1000)
-	response := make(chan string, 1)
-	go read(netReader,mesages, response)
+func commandHandler(client *Client){
+
+	go read(client)
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Printf(">")
 	for scanner.Scan(){
@@ -48,7 +74,7 @@ func commandHandler(conn net.Conn, uname string ){
 			commands.Help()
 				break
 		case "jr":
-			err := commands.JoinRoom(comand[1], netWriter, response)
+			err := commands.JoinRoom(comand[1], client.writer, client.responses)
 			ec.CheckError(err)
 
 		}
@@ -67,32 +93,16 @@ func main(){
 	fmt.Println("... ...")
 	connection, err := net.DialTCP("tcp4", nil, tcpAddr)
 	ec.CheckError(err)
+	defer connection.Close()
 	fmt.Println("Connection successfull!")
 
-login:
-	fmt.Println("type your username")
-	fmt.Printf(">")
-	var uname string
-	fmt.Scan(&uname)
-	n, err := connection.Write([]byte(uname))
-	ec.CheckError(err)
-	ec.CheckAllBytesSent(int(n), uname)
-	var buffer [512] byte
-	n, err = connection.Read(buffer[0:])
-	if bytes.Compare(buffer[0:1], []byte("y")) != 0{
-		fmt.Fprintf(os.Stderr, "Username already in use")
-		goto login
-	}
+	cl := login(connection)
+
 	utils.Cls()
 	fmt.Println("success! welcome to KonsoleChat")
 	fmt.Println("type \"help\" for help")
 
 
-	commandHandler(connection, uname)
-
-
-
-
-
+	commandHandler(cl)
 	end: goto end
 }
