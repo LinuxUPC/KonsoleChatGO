@@ -47,11 +47,19 @@ func parseMessage(msg * string) []string{
 		if char == ' ' && !in_dquote{
 			res = append(res, word)
 			word = ""
-		}else if char == '"' && in_dquote && !jump_char{
-			res = append(res, word)
-			word = ""
 		}else if char == '\\' {
 			jump_char = true
+		}else if char == '"'{
+			if jump_char{
+				word += string(char)
+			}else if in_dquote{
+				res = append(res, word)
+				word = ""
+			}else{
+				res = append(res, word)
+				word = ""
+				in_dquote = true
+			}
 		}
 	}
 
