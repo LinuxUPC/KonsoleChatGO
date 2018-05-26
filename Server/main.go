@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"bufio"
+	"KonsoleChatGO/ec"
 )
 
 type Client struct {
@@ -37,10 +38,32 @@ func handleMessage(message string, conn net.Conn){
 
 }
 
+func parseMessage(msg * string) []string{
+	var res []string
+	in_dquote := false
+	jump_char := false
+	word := ""
+	for _, char := range msg {
+		if char == ' ' && !in_dquote{
+			res = append(res, word)
+			word = ""
+		}else if char == '"' && in_dquote && !jump_char{
+			res = append(res, word)
+			word = ""
+		}else if char == '\\' {
+			jump_char = true
+		}
+	}
+
+	return res
+}
+
 func clientConnection(me * Client, all []Client){
 	defer me.conn.Close()
 	for {
-		me.reader.ReadBytes('|')
+		msg, err := me.reader.ReadString('|')
+		ec.CheckError(err)
+		parseMessage(&msg)
 	}
 }
 
