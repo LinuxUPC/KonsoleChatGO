@@ -4,9 +4,30 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"bufio"
 )
 
-var users = make(map[string]net.Conn)
+type Client struct {
+	conn net.Conn
+	reader *bufio.Reader
+	writer *bufio.Writer
+	messages chan string
+	responses chan string
+	alias string
+	room string
+}
+
+func makeClient(new * Client, conn net.Conn){
+	new = &Client{
+		conn:conn,
+		reader:bufio.NewReader(conn),
+		writer:bufio.NewWriter(conn),
+		messages:make(chan string),
+		responses:make(chan string),
+		alias:"",
+		room:"",
+	}
+}
 
 func split(str string, separator byte){
 
@@ -16,24 +37,10 @@ func handleMessage(message string, conn net.Conn){
 
 }
 
-func clientHandler(conn net.Conn){
-	defer conn.Close()
-	var buffer [512] byte
-	n, err := conn.Read(buffer[0:])
-	checkError(err)
-	username := string(buffer[:n])
-	fmt.Println("User", username, "logged in.")
-	if users[username] == nil {
-		users[username] = conn
-	}else{
-		conn.Write([]byte("alias exists"))
-		return
-	}
+func clientConnection(me * Client, all []Client){
+	defer me.conn.Close()
 	for {
-		rbuffer, err := conn.Read(buffer[0:])
-		message := string(rbuffer)
-		checkError(err)
-		handleMessage(message, conn)
+		me.reader.ReadBytes('|')
 	}
 }
 
@@ -46,12 +53,17 @@ func main() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
+	var clients []Client
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			continue
 		}
-		go clientHandler(conn)
+		var new Client
+		makeClient(&new, conn)
+		clients = append(clients, new)
+		go clientConnection(&new, &clients)
 	}
 }
 
