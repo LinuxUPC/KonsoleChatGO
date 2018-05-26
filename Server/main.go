@@ -8,7 +8,13 @@ import (
 
 var users = make(map[string]net.Conn)
 
+func split(str string, separator byte){
 
+}
+
+func handleMessage(message string, conn net.Conn){
+
+}
 
 func clientHandler(conn net.Conn){
 	defer conn.Close()
@@ -19,11 +25,15 @@ func clientHandler(conn net.Conn){
 	fmt.Println("User", username, "logged in.")
 	if users[username] == nil {
 		users[username] = conn
+	}else{
+		conn.Write([]byte("alias exists"))
+		return
 	}
 	for {
-		_, err := conn.Read(buffer[0:])
+		rbuffer, err := conn.Read(buffer[0:])
+		message := string(rbuffer)
 		checkError(err)
-		/**recived = split(buffer, n)**/
+		handleMessage(message, conn)
 	}
 }
 
