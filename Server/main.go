@@ -6,6 +6,7 @@ import (
 	"os"
 	"bufio"
 	"KonsoleChatGO/ec"
+	"KonsoleChatGO/utils"
 )
 
 type Client struct {
@@ -38,32 +39,8 @@ func handleMessage(message string, conn net.Conn){
 
 }
 
-func parseMessage(msg * string) []string{
-	var res []string
-	in_dquote := false
-	jump_char := false
-	word := ""
-	for _, char := range msg {
-		if char == ' ' && !in_dquote{
-			res = append(res, word)
-			word = ""
-		}else if char == '\\' {
-			jump_char = true
-		}else if char == '"'{
-			if jump_char{
-				word += string(char)
-			}else if in_dquote{
-				res = append(res, word)
-				word = ""
-			}else{
-				res = append(res, word)
-				word = ""
-				in_dquote = true
-			}
-		}
-	}
+func joinRoom(me * Client, roomname string){
 
-	return res
 }
 
 func clientConnection(me * Client, all []Client){
@@ -71,7 +48,27 @@ func clientConnection(me * Client, all []Client){
 	for {
 		msg, err := me.reader.ReadString('|')
 		ec.CheckError(err)
-		parseMessage(&msg)
+		comands ,err := utils.ParseCommand(msg)
+		ec.CheckError(err)
+		switch comands[0]{
+		case "cr":{
+
+		}
+		case "jr":{
+			if len(comands) != 2{
+				me.writer.Write("wf")
+			}else{
+				joinRoom(me, comands[1])
+			}
+		}
+		case "lr":{}
+		case "li":{}
+		case "lo":{}
+		case "msg":{}
+		default:{
+
+		}
+		}
 	}
 }
 
