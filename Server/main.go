@@ -39,11 +39,63 @@ func handleMessage(message string, conn net.Conn){
 
 }
 
-func joinRoom(me * Client, roomname string){
+func joinRoom(me * Client, all *[]Client, roomname string) {
+	roomExists := false
+	for _, current := range *all {
+		if &current != me{
+			if current.room == roomname {
+				roomExists = true
+				break
+			}
+		}
+	}
 
+	if roomExists {
+		me.room = roomname
+		me.writer.Write([]byte("jr_success|"))
+	}else {
+		me.writer.Write([]byte("jr_fail room_exists|"))
+	}
 }
 
-func clientConnection(me * Client, all []Client){
+func leaveRoom(client *Client) {
+	client.room = ""
+	client.writer.Write([]byte("lr_success|"))
+}
+
+func login(me *Client, all *[]Client, alias string) {
+	aliasExists := false
+	for _, current := range *all {
+		if &current != me{
+			if current.room == alias {
+				aliasExists = true
+				break
+			}
+		}
+	}
+
+	if aliasExists{
+		me.writer.Write([]byte("li_fail alias_exists|"))
+	}else{
+		me.alias = alias
+		me.writer.Write([]byte("li_success|"))
+	}
+}
+
+func logout(client *Client) {
+	client.alias = ""
+	client.writer.Write([]byte("lo_success|"))
+}
+
+func send(me *Client, all *[]Client, msg string) {
+	for _, current := range *all {
+		if current.room != me.room {
+			current.writer.Write([]byte("msg " + msg + "|"))
+		}
+	}
+}
+
+func clientConnection(me * Client, all *[]Client){
 	defer me.conn.Close()
 	for {
 		msg, err := me.reader.ReadString('|')
@@ -56,17 +108,41 @@ func clientConnection(me * Client, all []Client){
 		}
 		case "jr":{
 			if len(comands) != 2{
-				me.writer.Write("wf")
+				me.writer.Write([]byte("wf|"))
 			}else{
-				joinRoom(me, comands[1])
+				joinRoom(me, all, comands[1])
 			}
 		}
-		case "lr":{}
-		case "li":{}
-		case "lo":{}
-		case "msg":{}
-		default:{
+		case "lr":{
+			if len(comands) != 1{
+				me.writer.Write([]byte("wf|"))
+			}else{
+				leaveRoom(me)
+			}
+		}
+		case "li":{
+			if len(comands) != 2{
 
+			}else{
+				login(me, all, comands[1])
+			}
+		}
+		case "lo":{
+			if len(comands) != 1{
+
+			}else{
+				logout(me)
+			}
+		}
+		case "msg":{
+			if len(comands) != 2{
+
+			}else{
+				send(me, all, comands[1])
+			}
+		}
+		default:{
+			me.writer.Write([]byte("wc|"))
 		}
 		}
 	}
@@ -91,7 +167,8 @@ func main() {
 		var new Client
 		makeClient(&new, conn)
 		clients = append(clients, new)
-		go clientConnection(&new, &clients)
+		fmt.Println("hola")
+		go clientConnection(&(clients[len(clients)-1]), &clients)
 	}
 }
 
