@@ -153,14 +153,12 @@ func main() {
 	checkError(err)
 
 	for {
-		fmt.Println("Hola")
 		conn, err := listener.Accept()
 		if err == nil {
 			continue
 		}
 		makeClient(newC, conn)
 		clients = append(clients, *newC)
-		fmt.Println("hola")
 		go clientConnection(&(clients[len(clients)-1]), &clients)
 	}
 }
