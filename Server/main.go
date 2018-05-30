@@ -31,14 +31,6 @@ func makeClient(new * Client, conn net.Conn){
 	}
 }
 
-func split(str string, separator byte){
-
-}
-
-func handleMessage(message string, conn net.Conn){
-
-}
-
 func joinRoom(me * Client, all *[]Client, roomname string) {
 	roomExists := false
 	for _, current := range *all {
@@ -148,6 +140,9 @@ func clientConnection(me * Client, all *[]Client){
 	}
 }
 
+var clients []Client
+var newC * Client
+
 func main() {
 	port := ":1200"
 
@@ -157,16 +152,14 @@ func main() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	var clients []Client
-
 	for {
+		fmt.Println("Hola")
 		conn, err := listener.Accept()
-		if err != nil {
+		if err == nil {
 			continue
 		}
-		var new Client
-		makeClient(&new, conn)
-		clients = append(clients, new)
+		makeClient(newC, conn)
+		clients = append(clients, *newC)
 		fmt.Println("hola")
 		go clientConnection(&(clients[len(clients)-1]), &clients)
 	}
